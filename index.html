@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CACM — Circular Analytical Chemistry Metric</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0e2340;
+  --navy-2:#16314f;
+  --navy-line:#25415f;
+  --green:#16663A;
+  --green-mid:#4FA83D;
+  --paper:#f4f6f8;
+  --ink:#16202e;
+  --muted:#6b7a8c;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Inter',"Helvetica Neue",Arial,sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+header.top{
+  background:var(--navy);
+  color:#fff;
+  padding:26px 32px 22px;
+  border-bottom:4px solid var(--green);
+}
+header.top h1{
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:30px;font-weight:700;margin:0;letter-spacing:.2px;
+}
+header.top h1 span{color:#7fd08a}
+header.top p{margin:6px 0 0;font-size:13.5px;color:#b9c7d8;max-width:860px;line-height:1.5}
+
+.wrap{max-width:1500px;margin:0 auto;padding:26px 32px 40px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:28px;align-items:start}
+@media(max-width:1180px){.wrap{grid-template-columns:1fr}}
+
+/* ---------- left: question table ---------- */
+.panel{background:var(--navy);border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(14,35,64,.12)}
+.panel-head{padding:16px 20px;border-bottom:1px solid var(--navy-line);display:flex;justify-content:space-between;align-items:center;gap:16px}
+.panel-head h2{margin:0;font-size:14px;font-weight:700;color:#fff;letter-spacing:.14em;text-transform:uppercase}
+.panel-head .hint{font-size:11.5px;color:#93a6bd;text-align:right;line-height:1.45}
+
+.q{border-bottom:1px solid var(--navy-line);padding:14px 20px 16px}
+.q:last-child{border-bottom:none}
+.q-top{display:flex;gap:12px;align-items:flex-start}
+.q-code{
+  flex:0 0 40px;height:40px;border-radius:9px;background:#1d3856;color:#9fd8ae;
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;letter-spacing:.02em
+}
+.q-body{flex:1;min-width:0}
+.q-name{color:#fff;font-size:14.5px;font-weight:600;line-height:1.35}
+.q-def{color:#8ea3bc;font-size:11.5px;line-height:1.5;margin-top:4px;display:none}
+.q.open .q-def{display:block}
+.q-more{
+  background:none;border:none;padding:0;margin-top:5px;cursor:pointer;
+  color:#7fd08a;font-size:11px;font-weight:600;font-family:inherit;letter-spacing:.06em;text-transform:uppercase
+}
+.q-fields{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:10px;margin-top:11px}
+@media(max-width:620px){.q-fields{grid-template-columns:1fr}}
+.q-note{margin-top:9px}
+
+/* custom dropdown */
+.dd{position:relative}
+.dd-btn{
+  width:100%;text-align:left;cursor:pointer;font-family:inherit;
+  background:#12293f;border:1px solid var(--navy-line);border-radius:8px;
+  color:#e7eef7;font-size:12.5px;line-height:1.45;padding:9px 30px 9px 11px;
+  display:block;min-height:38px;position:relative;transition:border-color .15s
+}
+.dd-btn:hover{border-color:#3a5f88}
+.dd.on .dd-btn{border-color:var(--green-mid)}
+.dd-btn .ph{color:#7d92ab}
+.dd-btn .sc{display:inline-block;min-width:20px;font-weight:800;color:#9fd8ae;margin-right:6px}
+.dd-btn:after{content:"";position:absolute;right:12px;top:50%;margin-top:-2px;border:4px solid transparent;border-top-color:#7d92ab}
+.dd-pop{
+  display:none;position:absolute;z-index:40;left:0;right:0;top:calc(100% + 5px);
+  background:#fff;border-radius:10px;box-shadow:0 16px 40px rgba(6,18,33,.34);
+  padding:5px;max-height:320px;overflow:auto
+}
+.dd.on .dd-pop{display:block}
+.dd-opt{
+  padding:8px 10px;border-radius:7px;cursor:pointer;font-size:12.5px;line-height:1.45;color:#22334a;
+  display:flex;gap:9px;align-items:flex-start
+}
+.dd-opt:hover{background:#eef4f0}
+.dd-opt .sc{
+  flex:0 0 26px;text-align:center;font-weight:800;font-size:11.5px;color:#fff;
+  border-radius:5px;padding:2px 0;margin-top:1px
+}
+.dd-opt.sel{background:#e6f2e9}
+
+.q-input{
+  width:100%;font-family:inherit;font-size:12.5px;color:#e7eef7;
+  background:#12293f;border:1px solid var(--navy-line);border-radius:8px;padding:8px 11px
+}
+.q-input::placeholder{color:#6d8299}
+.q-input:focus{outline:none;border-color:var(--green-mid)}
+
+.panel-foot{padding:14px 20px;background:var(--navy-2);display:flex;gap:10px;flex-wrap:wrap}
+.btn{
+  font-family:inherit;font-size:12px;font-weight:600;letter-spacing:.04em;cursor:pointer;
+  border-radius:8px;padding:9px 15px;border:1px solid var(--navy-line);background:#12293f;color:#cfe0f0
+}
+.btn:hover{border-color:#3a5f88}
+.btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+.btn.primary:hover{background:#1a7a45}
+
+/* ---------- right: graphic ---------- */
+.side{position:sticky;top:22px}
+.card{background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(14,35,64,.10);padding:18px}
+.fig{cursor:pointer;display:block;width:100%;height:auto}
+.fig-hint{text-align:center;font-size:11px;color:var(--muted);margin-top:6px;letter-spacing:.05em;text-transform:uppercase}
+
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.stat{background:var(--paper);border-radius:9px;padding:10px 12px}
+.stat b{display:block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.stat span{font-size:15px;font-weight:700;color:var(--ink)}
+.stat.wide{grid-column:1 / -1}
+
+.legend{margin-top:16px;border-top:1px solid #e3e8ee;padding-top:14px}
+.legend h3{margin:0 0 9px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.legend-row{display:flex;align-items:center;gap:9px;font-size:12px;color:#33465e;padding:3px 0}
+.chip{width:15px;height:15px;border-radius:4px;flex:0 0 15px}
+.legend-row em{font-style:normal;color:var(--muted);font-size:11.5px}
+
+footer.bottom{background:var(--navy);color:#9fb3c9;padding:22px 32px;font-size:12px;line-height:1.7}
+footer.bottom a{color:#7fd08a;text-decoration:none}
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:var(--navy);color:#fff;padding:11px 20px;border-radius:9px;font-size:12.5px;
+  opacity:0;pointer-events:none;transition:.25s;z-index:99
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>CACM — Circular Analytical Chemistry <span>Metric</span></h1>
+  <p>Ten criteria scored 0–10 against a documented rubric. Criteria marked N/A are excluded from the applicable maximum, so the final score is normalized to 100 across the criteria that actually apply.</p>
+</header>
+
+<div class="wrap">
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Assessment</h2>
+      <div class="hint">Pick a level for each criterion, then record evidence quality.<br>Use N/A only when structurally irrelevant, not when data are missing.</div>
+    </div>
+    <div id="qs"></div>
+    <div class="panel-foot">
+      <button class="btn primary" id="png">Download pictogram (PNG)</button>
+      <button class="btn" id="reset">Reset</button>
+    </div>
+  </section>
+
+  <section class="side">
+    <div class="card">
+      <svg id="fig" class="fig" viewBox="0 0 620 620" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="fig-hint">Click the wheel to save it as PNG</div>
+
+      <div class="stats">
+        <div class="stat"><b>Raw selected score</b><span id="s-raw">—</span></div>
+        <div class="stat"><b>Applicable maximum</b><span id="s-max">—</span></div>
+        <div class="stat"><b>Normalized CACM</b><span id="s-norm">—</span></div>
+        <div class="stat"><b>Completion</b><span id="s-done">Incomplete</span></div>
+        <div class="stat wide"><b>Circularity class</b><span id="s-class">—</span></div>
+      </div>
+
+      <div class="legend">
+        <h3>Circularity class</h3>
+        <div id="legend-class"></div>
+        <h3 style="margin-top:14px">Score meaning</h3>
+        <div id="legend-score"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer class="bottom">
+  This tool is provided for research purposes only.<br>
+  Contact: Prof. Heba Shaaban — <a href="mailto:Hsmohammed@iau.edu.sa">Hsmohammed@iau.edu.sa</a>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CRITERIA = [{"code": "C1", "name": "Material demand minimization", "definition": "Reduction in sample, reagent, sorbent and auxiliary-material demand per reportable analytical result, preferably relative to a justified reference/baseline method.", "evidence": "Mass/volume inventory per result; reference-method comparison; number of preparation steps.", "levels": [{"score": 0, "text": "<10% reduction, or no evidence of material minimization."}, {"score": 2, "text": "10–<25% reduction in total material demand versus baseline."}, {"score": 4, "text": "25–<40% reduction versus baseline; some miniaturization or step reduction."}, {"score": 6, "text": "40–<60% reduction; substantial miniaturization/direct handling of sample."}, {"score": 8, "text": "60–<80% reduction; very low reagent/sample consumption and few processing steps."}, {"score": 10, "text": "≥80% reduction, or an inherently minimal-material/direct/in situ approach with documented very low material intensity."}, {"score": null, "text": "Not applicable — written justification required."}]}, {"code": "C2", "name": "Renewable and secondary inputs", "definition": "Share of eligible reagents, sorbents, support materials and consumables derived from renewable, recycled, recovered or waste-derived sources.", "evidence": "Supplier declarations, material composition, mass balance, recycled/bio-based content.", "levels": [{"score": 0, "text": "<5% of eligible input mass is renewable/recycled/recovered, or origin is undocumented."}, {"score": 2, "text": "5–<20% circular/renewable input content."}, {"score": 4, "text": "20–<40% circular/renewable input content."}, {"score": 6, "text": "40–<60% circular/renewable input content."}, {"score": 8, "text": "60–<80% circular/renewable input content with documented sourcing."}, {"score": 10, "text": "≥80% circular/renewable input content, with traceable sourcing and no major performance trade-off."}, {"score": null, "text": "Not applicable — written justification required."}]}, {"code": "C3", "name": "Solvent circularity", "definition": "Avoidance of virgin solvent use through solvent-free/aqueous design, safer substitution, recovery, purification and reuse.", "evidence": "Solvent volumes per result, solvent hazard classification, recovery yield, reuse cycles.", "levels": [{"score": 0, "text": "High virgin-solvent dependence; little/no recovery; hazardous solvent burden remains substantial."}, {"score": 2, "text": "Minor solvent reduction/substitution; <20% of eligible solvent recovered/reused."}, {"score": 4, "text": "20–<40% effective virgin-solvent reduction or recovery/reuse; partial safer substitution."}, {"score": 6, "text": "40–<60% effective virgin-solvent reduction/recovery; hazardous solvents largely reduced."}, {"score": 8, "text": "60–<80% effective virgin-solvent reduction/recovery with predominantly safer solvents."}, {"score": 10, "text": "Solvent-free/essentially aqueous process, or ≥80% effective virgin-solvent reduction/recovery with predominantly safer solvent choices."}, {"score": null, "text": "Not applicable — written justification required."}]}, {"code": "C4", "name": "Consumables circularity", "definition": "Reduction, reuse, regeneration or recycling of vials, caps, filters, cartridges, SPE devices, columns and other eligible single-use analytical consumables.", "evidence": "Consumable inventory, reuse cycles, cleaning/regeneration records, recycling/take-back documentation.", "levels": [{"score": 0, "text": "Predominantly single-use; <10% of eligible consumables reused/recycled/avoided."}, {"score": 2, "text": "10–<25% of eligible consumables reused/recycled/avoided."}, {"score": 4, "text": "25–<40% circular handling of eligible consumables."}, {"score": 6, "text": "40–<60% circular handling; several consumables are reusable/regenerable."}, {"score": 8, "text": "60–<80% circular handling with documented reuse/regeneration protocols."}, {"score": 10, "text": "≥80% of eligible consumables avoided, reused, regenerated or recycled, with performance/safety verified."}, {"score": null, "text": "Not applicable — written justification required."}]}, {"code": "C5", "name": "Water stewardship and recirculation", "definition": "Reduction of water demand, fit-for-purpose water quality, water reuse/recirculation and avoidance of unnecessary high-purity water.", "evidence": "Water volume per result, purification requirement, reuse/recirculation fraction, discharge route.", "levels": [{"score": 0, "text": "No water-efficiency measures; unnecessary high-purity water or once-through use predominates."}, {"score": 2, "text": "<20% water reduction/reuse; limited quality matching."}, {"score": 4, "text": "20–<40% water reduction/reuse and some fit-for-purpose water selection."}, {"score": 6, "text": "40–<60% water reduction/reuse; routine quality matching and partial recirculation."}, {"score": 8, "text": "60–<80% water reduction/reuse with documented recirculation or recovery."}, {"score": 10, "text": "≥80% water reduction/reuse, or near-closed-loop water management with fit-for-purpose quality throughout."}, {"score": null, "text": "Not applicable — written justification required."}]}, {"code": "C6", "name": "Energy and low-carbon operation", "definition": "Energy demand per reportable result, including instrument runtime, heating/cooling/drying and standby burden, together with the carbon intensity of supplied energy.", "evidence": "kWh per result, instrument runtime, heating/cooling profile, electricity-mix documentation.", "levels": [{"score": 0, "text": "No energy-efficiency evidence; energy-intensive steps/long runtime and high-carbon supply predominate."}, {"score": 2, "text": "<20% reduction in energy demand versus baseline, or only minor operational optimization."}, {"score": 4, "text": "20–<40% energy reduction and/or some low-carbon electricity contribution."}, {"score": 6, "text": "40–<60% energy reduction with optimized runtime/thermal steps; meaningful low-carbon energy contribution."}, {"score": 8, "text": "60–<80% energy reduction or very efficient high-throughput operation with predominantly low-carbon electricity."}, {"score": 10, "text": "≥80% energy reduction versus baseline, or intrinsically very low-energy analysis powered predominantly by verified low-carbon/renewable electricity."}, {"score": null, "text": "Not applicable — written justification required."}]}, {"code": "C7", "name": "Waste prevention and source segregation", "definition": "Prevention of analytical waste at source and segregation of unavoidable streams so they can be safely recovered, recycled or treated.", "evidence": "Waste mass/volume per result, segregation logs, waste categories, hazardous-waste documentation.", "levels": [{"score": 0, "text": "Little/no waste prevention; mixed waste streams; segregation is absent or inadequate."}, {"score": 2, "text": "<20% waste reduction; basic segregation of only major hazardous streams."}, {"score": 4, "text": "20–<40% waste reduction with routine separation of key waste streams."}, {"score": 6, "text": "40–<60% waste reduction and ≥60% of eligible waste correctly segregated."}, {"score": 8, "text": "60–<80% waste reduction and ≥80% of eligible waste segregated for recovery/recycling/treatment."}, {"score": 10, "text": "≥80% waste reduction and ≥90% of eligible waste source-segregated, with hazardous residues managed through documented compliant routes."}, {"score": null, "text": "Not applicable — written justification required."}]}, {"code": "C8", "name": "Recovery, regeneration and closed-loop return", "definition": "Recovery and repeated useful return of solvents, reagents, sorbents, catalysts, columns or other functional analytical materials.", "evidence": "Recovery yield, number of reuse/regeneration cycles, performance retention, mass balance.", "levels": [{"score": 0, "text": "<10% of eligible material is recovered/regenerated; essentially linear use."}, {"score": 2, "text": "10–<25% recovered/regenerated or only one limited reuse cycle."}, {"score": 4, "text": "25–<40% recovered/regenerated with demonstrated reuse."}, {"score": 6, "text": "40–<60% recovered/regenerated with multiple reuse cycles and acceptable performance retention."}, {"score": 8, "text": "60–<80% recovered/regenerated and repeatedly returned to service with documented quality control."}, {"score": 10, "text": "≥80% recovered/regenerated in a near-closed loop with multiple validated reuse cycles and minimal performance loss."}, {"score": null, "text": "Not applicable — written justification required."}]}, {"code": "C9", "name": "Asset lifetime, repairability and utilization", "definition": "Measures that keep instruments, modules and durable analytical assets in useful service through maintenance, repair, modular replacement, sharing and high utilization.", "evidence": "Maintenance records, asset age/lifetime, repair history, utilization rate, modularity/refurbishment documentation.", "levels": [{"score": 0, "text": "Disposable/replace-first practice; maintenance, repairability and utilization are undocumented."}, {"score": 2, "text": "Reactive maintenance only; limited repair or reuse planning."}, {"score": 4, "text": "Preventive maintenance is documented; some parts/components are repairable or replaceable."}, {"score": 6, "text": "Preventive maintenance + repair/modular replacement + shared or improved utilization are routinely implemented."}, {"score": 8, "text": "Documented life-extension program, high utilization/shared access, modular repair, and reuse/refurbishment of components."}, {"score": 10, "text": "Comprehensive circular asset strategy: measurable life extension, repair/refurbishment first, modular upgrades, high utilization, and supplier/service support or take-back."}, {"score": null, "text": "Not applicable — written justification required."}]}, {"code": "C10", "name": "End-of-life responsibility and reverse flow", "definition": "Verified recycling, take-back, refurbishment or recovery routes for analytical materials/equipment, with safe treatment of irrecoverable hazardous residues.", "evidence": "Take-back certificates, recycler documentation, waste manifests, refurbishment/recycling records.", "levels": [{"score": 0, "text": "End-of-life route is unknown or dominated by disposal; reverse logistics absent."}, {"score": 2, "text": "Basic compliant disposal; <25% of eligible nonhazardous materials enter recycling/take-back."}, {"score": 4, "text": "25–<40% of eligible materials enter verified recycling/take-back/refurbishment routes."}, {"score": 6, "text": "40–<60% enter verified reverse-flow routes; hazardous residues are documented and compliant."}, {"score": 8, "text": "60–<80% enter verified recycling/take-back/refurbishment routes with documented partners."}, {"score": 10, "text": "≥80% of eligible materials enter verified circular end-of-life routes, and 100% of hazardous residues follow documented compliant treatment."}, {"score": null, "text": "Not applicable — written justification required."}]}];
+
+const META = {
+  C1:{short:["Material","demand"],icon:"box"},
+  C2:{short:["Renewable","inputs"],icon:"leaf"},
+  C3:{short:["Solvent","circularity"],icon:"flask"},
+  C4:{short:["Consumables","circularity"],icon:"vial"},
+  C5:{short:["Water","stewardship"],icon:"drop"},
+  C6:{short:["Energy &amp;","low carbon"],icon:"bolt"},
+  C7:{short:["Waste","prevention"],icon:"bin"},
+  C8:{short:["Recovery &amp;","regeneration"],icon:"loop"},
+  C9:{short:["Asset","lifetime"],icon:"wrench"},
+  C10:{short:["End-of-life","reverse flow"],icon:"back"}
+};
+
+const SCORE_COLOR = {0:"#D64545",2:"#F0821E",4:"#F5B41A",6:"#A8C63A",8:"#4FA83D",10:"#16663A"};
+const NA_COLOR = "#9AA4AE";
+const EMPTY_COLOR = "#E4E9EE";
+
+const SCORE_MEANING = [
+  [0,"Linear / no meaningful circular action"],
+  [2,"Initial"],
+  [4,"Developing"],
+  [6,"Substantial"],
+  [8,"Advanced"],
+  [10,"Near-closed-loop"]
+];
+
+const CLASSES = [
+  {min:0, max:39.999, name:"Linear / low circularity", color:"#D64545", note:"Major redesign needed."},
+  {min:40,max:59.999, name:"Transitional",             color:"#F0821E", note:"Some circular practices are present."},
+  {min:60,max:74.999, name:"Progressing circularity",  color:"#F5B41A", note:"Meaningful loops/prevention established."},
+  {min:75,max:89.999, name:"Highly circular",          color:"#4FA83D", note:"Most eligible flows are circularized."},
+  {min:90,max:100,    name:"Near-closed-loop",         color:"#16663A", note:"Circularity embedded across nearly the full life cycle."}
+];
+
+const EVIDENCE = [
+  {key:"quant", label:"Quantitative",           fill:1},
+  {key:"qual",  label:"Documented qualitative", fill:0.5},
+  {key:"ltd",   label:"Limited / assumed",      fill:0}
+];
+
+const ICONS = {
+  box:'<path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/>',
+  leaf:'<path d="M20 4c0 9-5.5 14-12 14H5c0-8 5-13 12-13h3z"/><path d="M4 21c2.5-5 6-8 11-10"/>',
+  flask:'<path d="M9 3h6M10 3v6L5 18.5A2 2 0 0 0 6.8 21h10.4a2 2 0 0 0 1.8-2.5L14 9V3"/><path d="M7.5 15h9"/>',
+  vial:'<path d="M8 3h8M9.5 3v14a2.5 2.5 0 0 0 5 0V3"/><path d="M9.5 11h5"/>',
+  drop:'<path d="M12 3s6 6.4 6 10.4A6 6 0 0 1 6 13.4C6 9.4 12 3 12 3z"/>',
+  bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  bin:'<path d="M4 7h16M10 4h4M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/>',
+  loop:'<path d="M20 12a8 8 0 0 1-13.7 5.6M4 12a8 8 0 0 1 13.7-5.6"/><path d="M4 18v-4h4M20 6v4h-4"/>',
+  wrench:'<path d="M21 5.5a5 5 0 0 1-6.8 6.5L6 20a2.1 2.1 0 0 1-3-3l8-8.2A5 5 0 0 1 17.5 3z"/>',
+  back:'<path d="M3 8.5 12 4l9 4.5v7L12 20l-9-4.5z"/><path d="M15.5 12H9.5m0 0 2.5-2.5M9.5 12l2.5 2.5"/>'
+};
+
+/* ---------------- state ---------------- */
+const state = CRITERIA.map(c => ({code:c.code, level:null, evidence:null, note:""}));
+const byCode = code => state.find(s => s.code === code);
+
+/* ---------------- left column ---------------- */
+function buildQuestions(){
+  const host = document.getElementById("qs");
+  host.innerHTML = "";
+  CRITERIA.forEach((c, i) => {
+    const row = document.createElement("div");
+    row.className = "q";
+    row.innerHTML = `
+      <div class="q-top">
+        <div class="q-code">${c.code}</div>
+        <div class="q-body">
+          <div class="q-name">${c.name}</div>
+          <div class="q-def">${c.definition}<br><b style="color:#a9bed6">Evidence expected:</b> ${c.evidence}</div>
+          <button class="q-more" type="button">Definition</button>
+          <div class="q-fields">
+            <div class="dd" data-kind="level" data-code="${c.code}">
+              <button class="dd-btn" type="button"><span class="ph">Select level…</span></button>
+              <div class="dd-pop"></div>
+            </div>
+            <div class="dd" data-kind="evidence" data-code="${c.code}">
+              <button class="dd-btn" type="button"><span class="ph">Evidence quality…</span></button>
+              <div class="dd-pop"></div>
+            </div>
+          </div>
+          <div class="q-note">
+            <input class="q-input" data-code="${c.code}" placeholder="Evidence / justification (optional)">
+          </div>
+        </div>
+      </div>`;
+
+    row.querySelector(".q-more").onclick = () => row.classList.toggle("open");
+    row.querySelector(".q-input").oninput = e => { byCode(c.code).note = e.target.value; };
+
+    // level options
+    const levelPop = row.querySelector('[data-kind="level"] .dd-pop');
+    c.levels.forEach((lv, idx) => {
+      const opt = document.createElement("div");
+      opt.className = "dd-opt";
+      const isNA = lv.score === null;
+      const col = isNA ? NA_COLOR : SCORE_COLOR[lv.score];
+      opt.innerHTML = `<span class="sc" style="background:${col}">${isNA ? "N/A" : lv.score}</span><span>${lv.text}</span>`;
+      opt.onclick = () => { byCode(c.code).level = idx; closeAll(); render(); };
+      levelPop.appendChild(opt);
+    });
+
+    // evidence options
+    const evPop = row.querySelector('[data-kind="evidence"] .dd-pop');
+    EVIDENCE.forEach((ev, idx) => {
+      const opt = document.createElement("div");
+      opt.className = "dd-opt";
+      opt.innerHTML = `<span class="sc" style="background:#16314f">${ev.fill === 1 ? "●" : ev.fill ? "◐" : "○"}</span><span>${ev.label}</span>`;
+      opt.onclick = () => { byCode(c.code).evidence = idx; closeAll(); render(); };
+      evPop.appendChild(opt);
+    });
+
+    row.querySelectorAll(".dd-btn").forEach(btn => {
+      btn.onclick = e => {
+        e.stopPropagation();
+        const dd = btn.parentElement, was = dd.classList.contains("on");
+        closeAll();
+        if(!was) dd.classList.add("on");
+      };
+    });
+
+    host.appendChild(row);
+  });
+}
+function closeAll(){ document.querySelectorAll(".dd.on").forEach(d => d.classList.remove("on")); }
+document.addEventListener("click", closeAll);
+
+function paintSelections(){
+  document.querySelectorAll('.dd[data-kind="level"]').forEach(dd => {
+    const st = byCode(dd.dataset.code);
+    const c = CRITERIA.find(x => x.code === dd.dataset.code);
+    const btn = dd.querySelector(".dd-btn");
+    dd.querySelectorAll(".dd-opt").forEach((o, i) => o.classList.toggle("sel", i === st.level));
+    if(st.level === null){ btn.innerHTML = '<span class="ph">Select level…</span>'; return; }
+    const lv = c.levels[st.level];
+    const tag = lv.score === null ? "N/A" : lv.score;
+    btn.innerHTML = `<span class="sc">${tag}</span>${lv.text}`;
+  });
+  document.querySelectorAll('.dd[data-kind="evidence"]').forEach(dd => {
+    const st = byCode(dd.dataset.code);
+    const btn = dd.querySelector(".dd-btn");
+    dd.querySelectorAll(".dd-opt").forEach((o, i) => o.classList.toggle("sel", i === st.evidence));
+    btn.innerHTML = st.evidence === null
+      ? '<span class="ph">Evidence quality…</span>'
+      : `<span class="sc">${EVIDENCE[st.evidence].fill === 1 ? "●" : EVIDENCE[st.evidence].fill ? "◐" : "○"}</span>${EVIDENCE[st.evidence].label}`;
+  });
+}
+
+/* ---------------- scoring ---------------- */
+function compute(){
+  let raw = 0, max = 0, answered = 0;
+  state.forEach(s => {
+    if(s.level === null) return;
+    answered++;
+    const lv = CRITERIA.find(c => c.code === s.code).levels[s.level];
+    if(lv.score === null) return;          // N/A: excluded from applicable maximum
+    raw += lv.score;
+    max += 10;
+  });
+  const norm = max === 0 ? null : 100 * raw / max;
+  let cls = null;
+  if(norm !== null) cls = CLASSES.find(c => norm >= c.min && norm <= c.max) || CLASSES[CLASSES.length - 1];
+  return {raw, max, norm, cls, answered, complete: answered === CRITERIA.length};
+}
+
+/* ---------------- wheel ---------------- */
+const CX = 310, CY = 300, R_OUT = 288, R_IN = 182;
+
+function polar(r, deg){
+  const a = (deg - 90) * Math.PI / 180;
+  return [CX + r * Math.cos(a), CY + r * Math.sin(a)];
+}
+function sector(a0, a1, r0, r1){
+  const [x0,y0] = polar(r1, a0), [x1,y1] = polar(r1, a1);
+  const [x2,y2] = polar(r0, a1), [x3,y3] = polar(r0, a0);
+  const big = (a1 - a0) > 180 ? 1 : 0;
+  return `M${x0.toFixed(2)},${y0.toFixed(2)} A${r1},${r1} 0 ${big} 1 ${x1.toFixed(2)},${y1.toFixed(2)} L${x2.toFixed(2)},${y2.toFixed(2)} A${r0},${r0} 0 ${big} 0 ${x3.toFixed(2)},${y3.toFixed(2)} Z`;
+}
+function tangential(mid){
+  let rot = mid;
+  if(mid > 90 && mid < 270) rot = mid + 180;
+  return rot;
+}
+
+function renderFig(res){
+  const parts = [];
+  parts.push(`<rect x="0" y="0" width="620" height="620" fill="#ffffff"/>`);
+
+  const step = 36, gap = 1.6;
+  CRITERIA.forEach((c, i) => {
+    const st = state[i];
+    const lv = st.level === null ? null : c.levels[st.level];
+    const isNA = lv && lv.score === null;
+    const fill = lv === null ? EMPTY_COLOR : (isNA ? NA_COLOR : SCORE_COLOR[lv.score]);
+    const a0 = i * step + gap / 2, a1 = (i + 1) * step - gap / 2, mid = i * step + step / 2;
+    const dark = lv !== null && !isNA && lv.score >= 6;
+    const txt = lv === null ? "#8b98a6" : (dark ? "#ffffff" : "#20303f");
+
+    parts.push(`<path d="${sector(a0, a1, R_IN, R_OUT)}" fill="${fill}" stroke="#ffffff" stroke-width="2"/>`);
+
+    // code + score
+    const [cx1, cy1] = polar(266, mid);
+    const label = lv === null ? c.code : (isNA ? `${c.code} · N/A` : `${c.code} · ${lv.score}`);
+    parts.push(`<text x="${cx1.toFixed(1)}" y="${cy1.toFixed(1)}" transform="rotate(${tangential(mid).toFixed(1)} ${cx1.toFixed(1)} ${cy1.toFixed(1)})" text-anchor="middle" dominant-baseline="middle" font-family="Inter,Helvetica Neue,Arial,sans-serif" font-size="15" font-weight="800" fill="${txt}" letter-spacing="0.5">${label}</text>`);
+
+    // icon
+    const [ix, iy] = polar(240, mid);
+    parts.push(`<g transform="translate(${ix.toFixed(1)} ${iy.toFixed(1)}) rotate(${tangential(mid).toFixed(1)}) scale(0.95) translate(-12 -12)" fill="none" stroke="${txt}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[META[c.code].icon]}</g>`);
+
+    // short label
+    const [lx, ly] = polar(212, mid);
+    const lines = META[c.code].short;
+    parts.push(`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" transform="rotate(${tangential(mid).toFixed(1)} ${lx.toFixed(1)} ${ly.toFixed(1)})" text-anchor="middle" font-family="Inter,Helvetica Neue,Arial,sans-serif" font-size="12" font-weight="600" fill="${txt}">` +
+      lines.map((t, k) => `<tspan x="${lx.toFixed(1)}" dy="${k === 0 ? -5 : 13}">${t}</tspan>`).join("") + `</text>`);
+
+    // evidence dot
+    const [dx, dy] = polar(191, mid);
+    const ev = st.evidence === null ? null : EVIDENCE[st.evidence];
+    if(ev === null){
+      parts.push(`<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="4.2" fill="none" stroke="${txt}" stroke-width="1.3" stroke-dasharray="2 2"/>`);
+    }else if(ev.fill === 1){
+      parts.push(`<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="4.6" fill="${txt}"/>`);
+    }else if(ev.fill === 0.5){
+      parts.push(`<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="4.6" fill="none" stroke="${txt}" stroke-width="1.4"/>`);
+      parts.push(`<path d="M${(dx - 4.6).toFixed(1)},${dy.toFixed(1)} A4.6,4.6 0 0 1 ${(dx + 4.6).toFixed(1)},${dy.toFixed(1)} Z" fill="${txt}"/>`);
+    }else{
+      parts.push(`<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="4.6" fill="none" stroke="${txt}" stroke-width="1.4"/>`);
+    }
+  });
+
+  // inner closed loop — three arrows
+  const loopColor = res.cls ? res.cls.color : "#c3cbd4";
+  const loopR = 166;
+  for(let k = 0; k < 3; k++){
+    const start = k * 120 + 8, end = start + 96;
+    const [sx, sy] = polar(loopR, start), [ex, ey] = polar(loopR, end);
+    parts.push(`<path d="M${sx.toFixed(1)},${sy.toFixed(1)} A${loopR},${loopR} 0 0 1 ${ex.toFixed(1)},${ey.toFixed(1)}" fill="none" stroke="${loopColor}" stroke-width="7" stroke-linecap="round" opacity="0.9"/>`);
+    const [hx, hy] = polar(loopR, end + 7);
+    parts.push(`<g transform="translate(${hx.toFixed(1)} ${hy.toFixed(1)}) rotate(${(end + 7).toFixed(1)})"><path d="M0,0 L-9,-6 L-9,6 Z" fill="${loopColor}"/></g>`);
+  }
+
+  // centre disc
+  parts.push(`<circle cx="${CX}" cy="${CY}" r="146" fill="#ffffff"/>`);
+  parts.push(`<circle cx="${CX}" cy="${CY}" r="146" fill="none" stroke="#e6ebf0" stroke-width="2"/>`);
+  parts.push(`<text x="${CX}" y="${CY - 58}" text-anchor="middle" font-family="Inter,Helvetica Neue,Arial,sans-serif" font-size="15" font-weight="800" letter-spacing="4" fill="#16663A">CACM</text>`);
+
+  const scoreTxt = res.norm === null ? "—" : res.norm.toFixed(1);
+  parts.push(`<text x="${CX}" y="${CY + 12}" text-anchor="middle" font-family="Inter,Helvetica Neue,Arial,sans-serif" font-size="74" font-weight="800" fill="#12202f">${scoreTxt}</text>`);
+  parts.push(`<text x="${CX}" y="${CY + 38}" text-anchor="middle" font-family="Inter,Helvetica Neue,Arial,sans-serif" font-size="14" font-weight="600" fill="#8b98a6">out of 100</text>`);
+
+  const clsName = res.cls ? res.cls.name.toUpperCase() : "NOT SCORED";
+  const clsCol = res.cls ? res.cls.color : "#b9c2cc";
+  parts.push(`<rect x="${CX - 118}" y="${CY + 56}" width="236" height="30" rx="15" fill="${clsCol}"/>`);
+  parts.push(`<text x="${CX}" y="${CY + 76}" text-anchor="middle" font-family="Inter,Helvetica Neue,Arial,sans-serif" font-size="12.5" font-weight="800" letter-spacing="1.4" fill="#ffffff">${clsName}</text>`);
+
+  parts.push(`<text x="${CX}" y="${CY + 112}" text-anchor="middle" font-family="Inter,Helvetica Neue,Arial,sans-serif" font-size="11.5" font-weight="600" fill="#8b98a6">${res.raw} / ${res.max || 0} applicable points</text>`);
+
+  parts.push(`<text x="${CX}" y="606" text-anchor="middle" font-family="Inter,Helvetica Neue,Arial,sans-serif" font-size="12" font-weight="600" fill="#8b98a6">Circular Analytical Chemistry Metric — closed-loop wheel</text>`);
+
+  document.getElementById("fig").innerHTML = parts.join("");
+}
+
+/* ---------------- legends + stats ---------------- */
+function buildLegends(){
+  const lc = document.getElementById("legend-class");
+  lc.innerHTML = CLASSES.map(c =>
+    `<div class="legend-row"><span class="chip" style="background:${c.color}"></span>
+      <span><b>${c.min}–${Math.ceil(c.max)}</b> · ${c.name} <em>— ${c.note}</em></span></div>`).join("");
+  const ls = document.getElementById("legend-score");
+  ls.innerHTML = SCORE_MEANING.map(([s, t]) =>
+    `<div class="legend-row"><span class="chip" style="background:${SCORE_COLOR[s]}"></span>
+      <span><b>${s}</b> · ${t}</span></div>`).join("") +
+    `<div class="legend-row"><span class="chip" style="background:${NA_COLOR}"></span>
+      <span><b>N/A</b> · Not applicable <em>— excluded from the applicable maximum</em></span></div>`;
+}
+
+function render(){
+  const res = compute();
+  paintSelections();
+  renderFig(res);
+  document.getElementById("s-raw").textContent  = res.max ? res.raw : "—";
+  document.getElementById("s-max").textContent  = res.max ? res.max : "—";
+  document.getElementById("s-norm").textContent = res.norm === null ? "—" : res.norm.toFixed(1);
+  document.getElementById("s-class").textContent = res.cls ? res.cls.name : "—";
+  const done = document.getElementById("s-done");
+  done.textContent = res.complete ? "Complete" : `Incomplete (${res.answered}/10)`;
+  done.style.color = res.complete ? "#16663A" : "#b06b12";
+}
+
+/* ---------------- export ---------------- */
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("on");
+  setTimeout(() => t.classList.remove("on"), 2200);
+}
+function exportPNG(){
+  const svg = document.getElementById("fig");
+  const scale = 5, w = 620, h = 620;
+  const src = new XMLSerializer().serializeToString(svg);
+  const img = new Image();
+  img.onload = () => {
+    const cv = document.createElement("canvas");
+    cv.width = w * scale; cv.height = h * scale;
+    const ctx = cv.getContext("2d");
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(img, 0, 0, cv.width, cv.height);
+    cv.toBlob(blob => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "CACM-pictogram.png";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+      if(navigator.clipboard && window.ClipboardItem){
+        navigator.clipboard.write([new ClipboardItem({"image/png": blob})])
+          .then(() => toast("PNG downloaded and copied to clipboard"))
+          .catch(() => toast("PNG downloaded"));
+      }else{
+        toast("PNG downloaded");
+      }
+    }, "image/png");
+  };
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+    src.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"')
+  );
+}
+
+document.getElementById("fig").onclick = exportPNG;
+document.getElementById("png").onclick = exportPNG;
+document.getElementById("reset").onclick = () => {
+  state.forEach(s => { s.level = null; s.evidence = null; s.note = ""; });
+  document.querySelectorAll(".q-input").forEach(i => i.value = "");
+  render();
+};
+
+buildQuestions();
+buildLegends();
+render();
+</script>
+</body>
+</html>
