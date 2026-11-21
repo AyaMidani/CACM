@@ -467,27 +467,34 @@ function renderFig(res){
       /* slice = wedge, clipped to the lobe circle → rounded petal edge */
       p.push(`<path d="${sector(a0, a1, HOLE, RP + D + 10)}" clip-path="url(#lobe${gi})" fill="${fill}" stroke="#ffffff" stroke-width="3"/>`);
 
+      /* radial layout, inner → outer: score · name block · icon · code,
+         each with a clear gap so nothing touches in narrow or short petals */
+      const lines = META[c.code].short;
+      const pitch = 14.5, CAP = 10;
+      const blockH = (lines.length - 1) * pitch + CAP;
+      const nameIn = HOLE + 34, nameOut = nameIn + blockH;
+      const codeR = outer - 22, codeIn = codeR - 9;
+
       /* code */
-      const codeR = outer - 26;
       const [nx, ny] = polar(codeR, mid);
       p.push(`<text x="${nx.toFixed(1)}" y="${ny.toFixed(1)}" transform="rotate(${tangential(mid).toFixed(1)} ${nx.toFixed(1)} ${ny.toFixed(1)})" text-anchor="middle" dominant-baseline="middle" font-family="Inter,Helvetica Neue,Arial,sans-serif" font-size="23" font-weight="800" fill="${t}">${c.code}</text>`);
 
-      /* name */
-      const lines = META[c.code].short;
-      const stepL = 15.5, half = ((lines.length - 1) * stepL) / 2;
-      const nameR = HOLE + 44 + half;
+      /* name, centred on its own band */
+      const nameR = (nameIn + nameOut) / 2;
       const [lx, ly] = polar(nameR, mid);
       p.push(`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" transform="rotate(${tangential(mid).toFixed(1)} ${lx.toFixed(1)} ${ly.toFixed(1)})" text-anchor="middle" font-family="Inter,Helvetica Neue,Arial,sans-serif" font-size="13.5" font-weight="700" fill="${t}">` +
-        lines.map((s, n) => `<tspan x="${lx.toFixed(1)}" dy="${n === 0 ? -half + 5 : stepL}">${s}</tspan>`).join("") + `</text>`);
+        lines.map((s, n) => `<tspan x="${lx.toFixed(1)}" dy="${n === 0 ? (-blockH / 2 + CAP) : pitch}">${s}</tspan>`).join("") + `</text>`);
 
-      /* icon, only where the lobe is deep enough for it */
-      if(room >= 140){
-        const [ix, iy] = polar((nameR + half + codeR) / 2 + 2, mid);
-        p.push(`<g transform="translate(${ix.toFixed(1)} ${iy.toFixed(1)}) rotate(${tangential(mid).toFixed(1)}) scale(1.25) translate(-12 -12)" fill="none" stroke="${t}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[META[c.code].icon]}</g>`);
+      /* icon in the gap between name and code, shrunk if the gap is tight */
+      const free = codeIn - nameOut;
+      const iconScale = Math.min(1.25, (free - 12) / 24);
+      if(free >= 34){
+        const [ix, iy] = polar((nameOut + codeIn) / 2, mid);
+        p.push(`<g transform="translate(${ix.toFixed(1)} ${iy.toFixed(1)}) rotate(${tangential(mid).toFixed(1)}) scale(${iconScale.toFixed(2)}) translate(-12 -12)" fill="none" stroke="${t}" stroke-width="${(1.7 * 1.25 / iconScale).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round">${ICONS[META[c.code].icon]}</g>`);
       }
 
       /* score */
-      const [sx, sy] = polar(HOLE + 15, mid);
+      const [sx, sy] = polar(HOLE + 14, mid);
       const sTxt = lv === null ? "—" : (isNA ? "N/A" : `${lv.score}/10`);
       p.push(`<text x="${sx.toFixed(1)}" y="${sy.toFixed(1)}" transform="rotate(${tangential(mid).toFixed(1)} ${sx.toFixed(1)} ${sy.toFixed(1)})" text-anchor="middle" dominant-baseline="middle" font-family="Inter,Helvetica Neue,Arial,sans-serif" font-size="13" font-weight="800" fill="${t}" opacity="0.92">${sTxt}</text>`);
 
