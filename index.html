@@ -44,7 +44,7 @@ header.top p{margin:6px 0 0;font-size:15.5px;color:var(--muted);max-width:860px;
 @media(max-width:1180px){.wrap{grid-template-columns:1fr}}
 
 /* ---------- left: question table ---------- */
-.panel{background:#ffffff;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(14,35,64,.06)}
+.panel{background:#ffffff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(14,35,64,.06)}
 .panel-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px}
 .panel-head h2{margin:0;font-size:15.5px;font-weight:700;color:var(--ink);letter-spacing:.14em;text-transform:uppercase}
 .panel-head .hint{font-size:13px;color:var(--muted);text-align:right;line-height:1.45}
@@ -87,6 +87,7 @@ header.top p{margin:6px 0 0;font-size:15.5px;color:var(--muted);max-width:860px;
   padding:5px;max-height:320px;overflow:auto
 }
 .dd.on .dd-pop{display:block}
+.dd.up .dd-pop{top:auto;bottom:calc(100% + 5px)}
 .dd-opt{
   padding:8px 10px;border-radius:7px;cursor:pointer;font-size:14.5px;line-height:1.45;color:var(--ink);
   display:flex;gap:9px;align-items:flex-start
@@ -105,7 +106,7 @@ header.top p{margin:6px 0 0;font-size:15.5px;color:var(--muted);max-width:860px;
 .q-input::placeholder{color:#8a9bb0}
 .q-input:focus{outline:none;border-color:var(--green-mid)}
 
-.panel-foot{padding:14px 20px;background:var(--paper);border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
+.panel-foot{border-radius:0 0 12px 12px;padding:14px 20px;background:var(--paper);border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
 .btn{
   font-family:inherit;font-size:13.5px;font-weight:600;letter-spacing:.04em;cursor:pointer;
   border-radius:8px;padding:9px 15px;border:1px solid #cfd8e3;background:#ffffff;color:var(--ink)
@@ -319,7 +320,12 @@ function buildQuestions(){
         e.stopPropagation();
         const dd = btn.parentElement, was = dd.classList.contains("on");
         closeAll();
-        if(!was) dd.classList.add("on");
+        if(!was){
+          dd.classList.add("on");
+          const pop = dd.querySelector(".dd-pop"), r = btn.getBoundingClientRect();
+          const need = Math.min(pop.scrollHeight, 320) + 10;
+          dd.classList.toggle("up", window.innerHeight - r.bottom < need && r.top > need);
+        }
       };
     });
 
